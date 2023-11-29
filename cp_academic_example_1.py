@@ -19,7 +19,7 @@ import casadi as ca
 import json
 import os
 
-np.random.seed(0)
+np.random.seed(10)
 
 def generate_obstacale_location():
     """
@@ -79,7 +79,7 @@ def main():
         # Perform conformal prediction.
         nonconformity_list = []
         for i in range(num_calib_samples):
-            nonconformity_list.append(min(math.sqrt((sensor_locations[i][0][0] - obstacle_locations[i][0][0])**2 + (sensor_locations[i][0][1] - obstacle_locations[i][0][1])**2),
+            nonconformity_list.append(max(math.sqrt((sensor_locations[i][0][0] - obstacle_locations[i][0][0])**2 + (sensor_locations[i][0][1] - obstacle_locations[i][0][1])**2),
                                           math.sqrt((sensor_locations[i][1][0] - obstacle_locations[i][1][0])**2 + (sensor_locations[i][1][1] - obstacle_locations[i][1][1])**2)))
         nonconformity_list.append(float("inf"))
         nonconformity_list.sort()
@@ -98,7 +98,7 @@ def main():
         test_sensor_locations = [[generate_sensor_ouput(test_obstacle_locations[i][0], sensor_noise), generate_sensor_ouput(test_obstacle_locations[i][1], sensor_noise)] for i in range(num_test_samples)]
         num_success = 0
         for i in range(num_test_samples):
-            if min(math.sqrt((test_sensor_locations[i][0][0] - test_obstacle_locations[i][0][0])**2 + (test_sensor_locations[i][0][1] - test_obstacle_locations[i][0][1])**2),
+            if max(math.sqrt((test_sensor_locations[i][0][0] - test_obstacle_locations[i][0][0])**2 + (test_sensor_locations[i][0][1] - test_obstacle_locations[i][0][1])**2),
                     math.sqrt((test_sensor_locations[i][1][0] - test_obstacle_locations[i][1][0])**2 + (test_sensor_locations[i][1][1] - test_obstacle_locations[i][1][1])**2)) <= c:
                 num_success += 1
         print("Success Rate for Conformal Prediction:", num_success / num_test_samples)
