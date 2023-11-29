@@ -128,7 +128,7 @@ def main():
                 opti.subject_to(x[t][0] == x[t - 1][0] + u_x)
                 opti.subject_to(x[t][1] == x[t - 1][1] + u_y)
         # Encode the constraint from conformal prediction.
-        for t in range(T):
+        for t in range(T + 1):
             opti.subject_to(ca.sqrt((x[t][0] - sensor_location1[0])**2 + (x[t][1] - sensor_location1[1])**2) - distance_threshold >= c)
             opti.subject_to(ca.sqrt((x[t][0] - sensor_location2[0])**2 + (x[t][1] - sensor_location2[1])**2) - distance_threshold >= c)
         # Set objective.
