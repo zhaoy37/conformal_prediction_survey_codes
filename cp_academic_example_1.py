@@ -64,8 +64,7 @@ def main():
     distance_threshold = 0.1 # The distance threshold for the obstacle avoidance.
     delta = 0.1 # The expected miscoverage rate.
 
-    success_rates_c1 = []
-    success_rates_c2 = []
+    success_rates_cp = []
     success_count_controller = 0
     for trial_num in range(num_test_trials):
         print("Trial Number:", trial_num)
@@ -74,36 +73,25 @@ def main():
         sensor_locations = [[generate_sensor_ouput(obstacle_locations[i][0], sensor_noise), generate_sensor_ouput(obstacle_locations[i][1], sensor_noise)] for i in range(num_calib_samples)]
 
         # Perform conformal prediction.
-        nonconformity_list_1 = []
-        nonconformity_list_2 = []
+        nonconformity_list = []
         for i in range(num_calib_samples):
-            nonconformity_list_1.append(math.sqrt((sensor_locations[i][0][0] - obstacle_locations[i][0][0])**2 + (sensor_locations[i][0][1] - obstacle_locations[i][0][1])**2))
-            nonconformity_list_2.append(math.sqrt((sensor_locations[i][1][0] - obstacle_locations[i][1][0])**2 + (sensor_locations[i][1][1] - obstacle_locations[i][1][1])**2))
-        nonconformity_list_1.append(float("inf"))
-        nonconformity_list_2.append(float("inf"))
-        nonconformity_list_1.sort()
-        nonconformity_list_2.sort()
+            nonconformity_list.append(min(math.sqrt((sensor_locations[i][0][0] - obstacle_locations[i][0][0])**2 + (sensor_locations[i][0][1] - obstacle_locations[i][0][1])**2),
+                                          math.sqrt((sensor_locations[i][1][0] - obstacle_locations[i][1][0])**2 + (sensor_locations[i][1][1] - obstacle_locations[i][1][1])**2)))
+        nonconformity_list.append(float("inf"))
+        nonconformity_list.sort()
         p = int(np.ceil((num_calib_samples + 1) * (1 - delta)))
-        c1 = nonconformity_list_1[p - 1]
-        c2 = nonconformity_list_2[p - 1]
-        print("Prediction region on obstacle 1:", c1)
-        print("Prediction region on obstacle 2:", c2)
+        c = nonconformity_list[p - 1]
+        print("Prediction region on Conformal Prediction:", c)
 
         test_obstacle_locations = [[generate_obstacale_location(), generate_obstacale_location()] for i in range(num_test_samples)]
         test_sensor_locations = [[generate_sensor_ouput(test_obstacle_locations[i][0], sensor_noise), generate_sensor_ouput(test_obstacle_locations[i][1], sensor_noise)] for i in range(num_test_samples)]
         num_success = 0
         for i in range(num_test_samples):
-            if math.sqrt((test_sensor_locations[i][0][0] - test_obstacle_locations[i][0][0])**2 + (test_sensor_locations[i][0][1] - test_obstacle_locations[i][0][1])**2) <= c1:
+            if min(math.sqrt((test_sensor_locations[i][0][0] - test_obstacle_locations[i][0][0])**2 + (test_sensor_locations[i][0][1] - test_obstacle_locations[i][0][1])**2),
+                    math.sqrt((test_sensor_locations[i][1][0] - test_obstacle_locations[i][1][0])**2 + (test_sensor_locations[i][1][1] - test_obstacle_locations[i][1][1])**2)) <= c:
                 num_success += 1
-        print("Success Rate for Obstacle 1:", num_success / num_test_samples)
-        success_rates_c1.append(num_success / num_test_samples)
-
-        num_success = 0
-        for i in range(num_test_samples):
-            if math.sqrt((test_sensor_locations[i][1][0] - test_obstacle_locations[i][1][0])**2 + (test_sensor_locations[i][1][1] - test_obstacle_locations[i][1][1])**2) <= c2:
-                num_success += 1
-        print("Success Rate for Obstacle 2:", num_success / num_test_samples)
-        success_rates_c2.append(num_success / num_test_samples)
+        print("Success Rate for Conformal Prediction:", num_success / num_test_samples)
+        success_rates_cp.append(num_success / num_test_samples)
 
         # Perform Control synthesis using casadi.
         # Use one sensor output.
@@ -130,8 +118,8 @@ def main():
                 opti.subject_to(x[t][1] == x[t - 1][1] + u_y)
         # Encode the constraint from conformal prediction.
         for t in range(T):
-            opti.subject_to(ca.sqrt((x[t][0] - sensor_location1[0])**2 + (x[t][1] - sensor_location1[1])**2) - distance_threshold >= c1)
-            opti.subject_to(ca.sqrt((x[t][0] - sensor_location2[0])**2 + (x[t][1] - sensor_location2[1])**2) - distance_threshold >= c2)
+            opti.subject_to(ca.sqrt((x[t][0] - sensor_location1[0])**2 + (x[t][1] - sensor_location1[1])**2) - distance_threshold >= c)
+            opti.subject_to(ca.sqrt((x[t][0] - sensor_location2[0])**2 + (x[t][1] - sensor_location2[1])**2) - distance_threshold >= c)
         # Set objective.
         opti.minimize(u_x**2 + u_y**2)
         # Solve the optimization problem.
@@ -156,29 +144,19 @@ def main():
         print()
 
     # Plot coverages.
-    plt.hist(success_rates_c1, bins=5)
-    plt.title("Coverage for Obstacle 1")
+    plt.hist(success_rates_cp, bins=10)
+    plt.title("Coverage for Conformal Prediction")
     plt.xlabel("Coverage")
     plt.ylabel("Frequency")
-    plt.savefig("coverage_obstacle1.png")
-    plt.show()
-
-    plt.hist(success_rates_c2, bins=5)
-    plt.title("Coverage for Obstacle 2")
-    plt.xlabel("Coverage")
-    plt.ylabel("Frequency")
-    plt.savefig("coverage_obstacle2.png")
+    plt.savefig("coverage_cp.pdf")
     plt.show()
 
     print("Success rate of the controller", success_count_controller / num_test_trials)
     with open("controll_success_rate.json", "w") as outfile:
         outfile.write(str(success_count_controller / num_test_trials))
 
-    with open("coverage_obstacle1.json", "w") as outfile:
-        json.dump(success_rates_c1, outfile)
-
-    with open("coverage_obstacle2.json", "w") as outfile:
-        json.dump(success_rates_c2, outfile)
+    with open("coverage_cp.json", "w") as outfile:
+        json.dump(success_rates_cp, outfile)
 
 if __name__ == "__main__":
     main()
