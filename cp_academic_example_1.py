@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import math
 import casadi as ca
 import json
+import os
 
 np.random.seed(0)
 
@@ -25,7 +26,7 @@ def generate_obstacale_location():
     This function generates the location of an obstacle.
     :return: the location of an obstacle.
     """
-    return [np.random.uniform(0, 10), np.random.uniform(0, 10)]
+    return [np.random.uniform(2, 5), np.random.uniform(2, 5)]
 
 
 def generate_sensor_ouput(obstacle_location, sensor_noise):
@@ -55,12 +56,15 @@ def is_successful_trajectory(trajectory_x, trajectory_y, obstacle_location1, obs
 
 
 def main():
+    # Switch to the results folder.
+    os.chdir("results_cp_academic_example_1")
+
     # Define hyperparameters.
     num_calib_samples = 1000 # The number of calibration samples.
     num_test_samples = 1000 # The number of test samples.
-    num_test_trials = 100 # The number of test trials.
+    num_test_trials = 50 # The number of test trials.
     T = 100 # The time horizon.
-    sensor_noise = 0.1 # The noise of the sensor output location in terms of the standard deviation for the normal distribution.
+    sensor_noise = 0.05 # The noise of the sensor output location in terms of the standard deviation for the normal distribution.
     distance_threshold = 0.1 # The distance threshold for the obstacle avoidance.
     delta = 0.1 # The expected miscoverage rate.
 
@@ -82,6 +86,13 @@ def main():
         p = int(np.ceil((num_calib_samples + 1) * (1 - delta)))
         c = nonconformity_list[p - 1]
         print("Prediction region on Conformal Prediction:", c)
+
+        plt.hist(nonconformity_list[:-1], bins=10)
+        plt.axvline(x=c, color='r', linestyle='--', label="Prediction Region C")
+        plt.legend()
+        plt.title("Nonconformity Scores for Conformal Prediction at trial " + str(trial_num))
+        plt.savefig("nonconformity_scores_trial_" + str(trial_num) + ".pdf")
+        plt.show()
 
         test_obstacle_locations = [[generate_obstacale_location(), generate_obstacale_location()] for i in range(num_test_samples)]
         test_sensor_locations = [[generate_sensor_ouput(test_obstacle_locations[i][0], sensor_noise), generate_sensor_ouput(test_obstacle_locations[i][1], sensor_noise)] for i in range(num_test_samples)]
@@ -141,6 +152,18 @@ def main():
                 trajectory_x.append(trajectory_x[-1] + optimal_u_x)
                 trajectory_y.append(trajectory_y[-1] + optimal_u_y)
         success_count_controller += is_successful_trajectory(trajectory_x, trajectory_y, obstacle_location1, obstacle_location2, distance_threshold)
+        print()
+
+        # Plot the trajectory plot.
+        plt.plot(trajectory_x[20:50], trajectory_y[20:50], label="Trajectory")
+        plt.scatter(sensor_location1[0], sensor_location1[1], label="Sensor Estimated Location for Obstacle 1")
+        plt.scatter(sensor_location2[0], sensor_location2[1], label="Sensor Estimated Location for Obstacle 2")
+        plt.scatter(obstacle_location1[0], obstacle_location1[1], label="Obstacle Location 1")
+        plt.scatter(obstacle_location2[0], obstacle_location2[1], label="Obstacle Location 2")
+        plt.legend()
+        plt.title(f"Robot Trajectory with the Synthesized Controller for Trial {trial_num} from t = 20 to t = 50", font = {'size': 10})
+        plt.savefig(f"trajectory_trial_{trial_num}.pdf")
+        plt.show()
         print()
 
     # Plot coverages.
