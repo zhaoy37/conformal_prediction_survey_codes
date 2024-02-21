@@ -16,17 +16,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import casadi as ca
+from pyscipopt import Model
 import json
 import os
+from matplotlib.lines import Line2D
+from parameters import *
 
-np.random.seed(10)
+np.random.seed(12)
 
 def generate_obstacale_location():
     """
     This function generates the location of an obstacle.
     :return: the location of an obstacle.
     """
-    return [np.random.uniform(0, 3), np.random.uniform(0, 3)]
+    return [np.random.uniform(2, 3), np.random.uniform(1.5, 3.5)]
 
 
 def generate_sensor_ouput(obstacle_location, sensor_noise):
@@ -36,7 +39,7 @@ def generate_sensor_ouput(obstacle_location, sensor_noise):
     :param sensor_noise: The noise of the sensor output location in terms of the standard deviation for the normal distribution.
     :return: The sensor output location.
     """
-    return [np.random.normal(obstacle_location[0], sensor_noise), np.random.normal(obstacle_location[1], sensor_noise)]
+    return [np.random.laplace(obstacle_location[0], sensor_noise), np.random.laplace(obstacle_location[1], sensor_noise)]
 
 def is_successful_trajectory(trajectory_x, trajectory_y, obstacle_location, num_obs, distance_threshold):
     """
@@ -50,131 +53,163 @@ def is_successful_trajectory(trajectory_x, trajectory_y, obstacle_location, num_
     """
     for t in range(len(trajectory_x)):
         if min(math.sqrt((trajectory_x[t] - obstacle_location[n_o][0])**2 + (trajectory_y[t] - obstacle_location[n_o][1])**2) - distance_threshold for n_o in range(num_obs)) < 0:
+            print("Oops! It collides with obstacles!")
             return False
     return True
 
 
-def main():
-    # Switch to the results folder.
-    os.chdir("results_cp_academic_example_1")
+def cp():
+    results = dict()
+    for i in range(num_groups):
+        print("Executing group:", i)
+        print("Evaluating:", groups[i])
+        results[i] = dict()
+        EC_cp = []
+        c = []
+        for _ in range(num_test_trials):
+            # Draw calibration data
+            obstacle_locations = [[generate_obstacale_location() for _ in range(num_obs)] for _ in range(groups[i]["num_calib"])]
+            sensor_locations = [[generate_sensor_ouput(obstacle_locations[n_c][n_o], sensor_noise) for n_o in range(num_obs)] for n_c in range(groups[i]["num_calib"])]
+            # Perform conformal prediction
+            nonconformity_list = []
+            for n_c in range(groups[i]["num_calib"]):
+                nonconformity_list.append(max(math.sqrt((sensor_locations[n_c][n_o][0] - obstacle_locations[n_c][n_o][0])**2 + (sensor_locations[n_c][n_o][1] - obstacle_locations[n_c][n_o][1])**2) for n_o in range(num_obs)))
+            nonconformity_list.append(float("inf"))
+            nonconformity_list.sort()
+            p = int(np.ceil((groups[i]["num_calib"] + 1) * (1 - delta)))
+            c.append(nonconformity_list[p - 1])
+            # test results
+            test_obstacle_locations = [[generate_obstacale_location() for _ in range(num_obs)] for _ in range(num_test_samples)]
+            test_sensor_locations = [[generate_sensor_ouput(test_obstacle_locations[i][n_o], sensor_noise) for n_o in range(num_obs)] for i in range(num_test_samples)]
+            num_success = 0
+            for n_c in range(num_test_samples):
+                if max(math.sqrt((test_obstacle_locations[n_c][n_o][0] - test_sensor_locations[n_c][n_o][0])**2 + (test_obstacle_locations[n_c][n_o][1] - test_sensor_locations[n_c][n_o][1])**2) for n_o in range(num_obs)) <= c[-1]:
+                    num_success += 1
+            EC_cp.append(num_success / num_test_samples)
 
-    # Define hyperparameters.
-    num_calib_samples = 1000 # The number of calibration samples.
-    num_test_samples = 1000 # The number of test samples.
-    num_test_trials = 50 # The number of test trials.
-    T = 50 # The time horizon.
-    sensor_noise = 0.05 # The noise of the sensor output location in terms of the standard deviation for the normal distribution.
-    distance_threshold = 0.1 # The distance threshold for the obstacle avoidance.
-    delta = 0.1 # The expected miscoverage rate.
-    num_obs = 10
+        results[i]["EC_cp"] = EC_cp
+        results[i]["c"] = c
 
-    success_rates_cp = []
-    success_count_controller = 0
-    for trial_num in range(2):
-        print("Trial Number:", trial_num)
-        # Draw calibration data.
-        obstacle_locations = [[generate_obstacale_location() for _ in range(num_obs)] for _ in range(num_calib_samples)]
-        sensor_locations = [[generate_sensor_ouput(obstacle_locations[i][n_o], sensor_noise) for n_o in range(num_obs)] for i in range(num_calib_samples)]
+    print("Saving data.")
+    for i in range(num_groups):
+        with open("results/example_1_num_calib=" + str(groups[i]["num_calib"]) + ".json", "w") as f:
+            json.dump(results[i], f)
 
-        # Perform conformal prediction.
-        nonconformity_list = []
-        for i in range(num_calib_samples):
-            nonconformity_list.append(max(math.sqrt((sensor_locations[i][n_o][0] - obstacle_locations[i][n_o][0])**2 + (sensor_locations[i][n_o][1] - obstacle_locations[i][n_o][1])**2) for n_o in range(num_obs)))
-        nonconformity_list.append(float("inf"))
-        nonconformity_list.sort()
-        p = int(np.ceil((num_calib_samples + 1) * (1 - delta)))
-        c = nonconformity_list[p - 1]
-        print("Prediction region on Conformal Prediction:", c)
+def control_cp():
+    results = dict()
+    for i in range(num_groups):
+        results[i] = dict()
+        with open("results/example_1_num_calib=" + str(groups[i]["num_calib"]) + ".json", "r") as file:
+            results[i] = json.load(file)
 
-        plt.hist(nonconformity_list[:-1], bins=10)
-        plt.axvline(x=c, color='r', linestyle='--', label="Prediction Region C")
-        plt.legend()
-        plt.title("Nonconformity Scores for Conformal Prediction at trial " + str(trial_num))
-        plt.savefig("nonconformity_scores_trial_" + str(trial_num) + ".pdf")
-        plt.show()
-
-        test_obstacle_locations = [[generate_obstacale_location() for _ in range(num_obs)] for _ in range(num_test_samples)]
-        test_sensor_locations = [[generate_sensor_ouput(test_obstacle_locations[i][n_o], sensor_noise) for n_o in range(num_obs)] for i in range(num_test_samples)]
-        num_success = 0
-        for i in range(num_test_samples):
-            if max(math.sqrt((test_obstacle_locations[i][n_o][0] - test_sensor_locations[i][n_o][0])**2 + (test_obstacle_locations[i][n_o][1] - test_sensor_locations[i][n_o][1])**2) for n_o in range(num_obs)) <= c:
-                num_success += 1
-        print("Success Rate for Conformal Prediction:", num_success / num_test_samples)
-        success_rates_cp.append(num_success / num_test_samples)
-
-        # Perform Control synthesis using casadi.
-        # Use one sensor output.
-        obstacle_location_control = [generate_obstacale_location() for _ in range(num_obs)]
-        sensor_location_control = [generate_sensor_ouput(obstacle_location_control[n_o], sensor_noise) for n_o in range(num_obs)]
-        print("sensor locations are:", sensor_location_control)
-        # Perform optimization.
-        opti = ca.Opti()
-        # Encode the dynamics.
-        x = [[opti.variable(), opti.variable()] for _ in range(T + 1)]
-        u = [[opti.variable(), opti.variable()] for _ in range(T)]
-        for t in range(T):
-            opti.subject_to(u[t][0] >= 0.1)
-            opti.subject_to(u[t][0] <= 10)
-            opti.subject_to(u[t][1] >= 0.1)
-            opti.subject_to(u[t][1] <= 10)
-        for t in range(T + 1):
-            if t == 0:
-                opti.subject_to(x[t][0] == 0)
-                opti.subject_to(x[t][1] == 0)
-            else:
-                opti.subject_to(x[t][0] == x[t - 1][0] + u[t-1][0])
-                opti.subject_to(x[t][1] == x[t - 1][1] + u[t-1][1])
-        # Encode the constraint from conformal prediction.
-        for n_o in range(num_obs):
-            for t in range(T + 1):
-                opti.subject_to(ca.sqrt((x[t][0] - sensor_location_control[n_o][0])**2 + (x[t][1] - sensor_location_control[n_o][1])**2) - distance_threshold >= c)
-        # Set objective.
-        opti.minimize(sum(u[t][0]**2 + u[t][1]**2 for t in range(T)))
-        # Solve the optimization problem.
-        solver_opts = {'ipopt': {'print_level': 0}}
-        opti.solver('ipopt', solver_opts)
-        solution = opti.solve()
-        # Print the optimal value of u.
-        optimal_u = []
-        for t in range(T):
-            optimal_u.append([solution.value(u[t][0]), solution.value(u[t][1])])
+    for i in range(num_groups):
+    # for i in range(1):
+        print("Executing group:", i)
+        print("Evaluating:", groups[i])
+        EC_control = []
         trajectory_x = []
         trajectory_y = []
-        for t in range(T + 1):
-            if t == 0:
-                trajectory_x.append(0)
-                trajectory_y.append(0)
+        obstacle_location_control = []
+        sensor_location_control = []
+        # obstacle_location_control = [[generate_obstacale_location() for _ in range(num_obs)] for _ in range(num_test_trials)]
+        # sensor_location_control = [[generate_sensor_ouput(obstacle_location_control[trial_num][n_o], sensor_noise) for n_o in range(num_obs)] for trial_num in range(num_test_trials)]
+        success_count_controller = 0
+        feasible_count_controller = 0
+        for trial_num in range(2):
+            print("Executing trial:", trial_num)
+            obstacle_location = [generate_obstacale_location() for _ in range(num_obs)] 
+            sensor_location = [generate_sensor_ouput(obstacle_location[n_o], sensor_noise) for n_o in range(num_obs)] 
+            model = Model("model")
+            model.setRealParam("limits/time", 100)
+            # Initialize the variables.
+            x, u = {}, {}
+            for t in range(T+1):
+                for j in range(2):
+                    x[t, j] = model.addVar(lb=None, ub=None, vtype="C", name="x(%s, %s)" % (t, j))
+            for t in range(T):
+                for j in range(2):
+                    u[t, j] = model.addVar(lb=None, ub=None, vtype="C", name="u(%s, %s)" % (t, j))
+            for t in range(T):
+                for j in range(2):
+                    model.addCons(u[t, j] >= 0)
+                    model.addCons(u[t, j] <= 1.5)
+            for t in range(T + 1):
+                if t == 0:
+                    model.addCons(x[t, 0] == 0)
+                    model.addCons(x[t, 1] == 0)
+                else:
+                    model.addCons(x[t, 0] == x[t-1, 0] + u[t-1, 0])
+                    model.addCons(x[t, 1] == x[t-1, 1] + u[t-1, 1])
+            # Encode the constraint from conformal prediction.
+            # circle obstacles
+            for n_o in range(num_obs):
+                for t in range(time_point[0], time_point[1]):
+                # for t in range(T+1):
+                    model.addCons((x[t, 0] - sensor_location[n_o][0])**2 + (x[t, 1] - sensor_location[n_o][1])**2 >= (results[i]["c"][trial_num] + distance_threshold)**2)
+            
+            # square obstacles
+            # z = {}
+            # for n_o in range(num_obs):
+            #     for t in range(time_point[0], 10):
+            #         for n_b in range(4):
+            #             z[t, n_o, n_b] = model.addVar(lb=None, ub=None, vtype="B", name="x(%s, %s, %s)" % (t, n_o, n_b))
+            # for n_o in range(num_obs):
+            #     for t in range(time_point[0], 10):
+            #         model.addCons(x[t, 0] - sensor_location[n_o][0] - (distance_threshold + results[i]["c"][trial_num]) >=  - M*(1-z[t, n_o, 0]))
+            #         model.addCons(sensor_location[n_o][0] - (distance_threshold + results[i]["c"][trial_num]) - x[t, 0] >=  - M*(1-z[t, n_o, 1]))
+            #         model.addCons(x[t, 1] - sensor_location[n_o][1] - (distance_threshold + results[i]["c"][trial_num]) >=  - M*(1-z[t, n_o, 2]))
+            #         model.addCons(sensor_location[n_o][1] - (distance_threshold + results[i]["c"][trial_num]) - x[t, 1] >=  - M*(1-z[t, n_o, 3]))
+            #         model.addCons(sum(z[t, n_o, n_b] for n_b in range(4)) >= 1)
+
+
+            for t_p in range(len(time_point)):
+                model.addCons((x[time_point[t_p], 0] - x_center[t_p])**2 + (x[time_point[t_p], 1] - y_center[t_p])**2 <= radius**2)
+            # Set objective.
+            objective = model.addVar(lb=None, ub=None, vtype="C", name="obj")
+            model.addCons(sum((u[t+1, 0] - u[t, 0])**2 + (u[t+1, 1] - u[t, 1])**2 for t in range(T-1)) + sum((x[time_point[t_p], 0] - x_center[t_p])**2 + (x[time_point[t_p], 1] - y_center[t_p])**2 for t_p in range(len(time_point))) <= objective)
+            model.setObjective(objective, "minimize")
+            # optimization
+            model.hideOutput()
+            model.optimize()
+            if model.getStatus() == "optimal":
+                sol = model.getBestSol()
+                x_opt1 = []
+                x_opt2 = []
+                for t in range(T+1):
+                    x_opt1.append(sol[x[t, 0]])
+                    x_opt2.append(sol[x[t, 1]])
+                    
+                success_count_controller += is_successful_trajectory(x_opt1, x_opt2, obstacle_location, num_obs, distance_threshold)
+                feasible_count_controller += 1
+                trajectory_x.append(x_opt1)
+                trajectory_y.append(x_opt2)
+                obstacle_location_control.append(obstacle_location)
+                sensor_location_control.append(sensor_location)
             else:
-                trajectory_x.append(trajectory_x[-1] + optimal_u[t-1][0])
-                trajectory_y.append(trajectory_y[-1] + optimal_u[t-1][1])
-        success_count_controller += is_successful_trajectory(trajectory_x, trajectory_y, obstacle_location_control, num_obs, distance_threshold)
-        print()
+                print("infeasible")
 
-        # Plot the trajectory plot.
-        plt.plot(trajectory_x[0:T], trajectory_y[0:T], label="Trajectory")
-        for n_o in range(num_obs):
-            plt.scatter(sensor_location_control[n_o][0], sensor_location_control[n_o][1])
-            plt.scatter(obstacle_location_control[n_o][0], obstacle_location_control[n_o][1])
-        plt.legend()
-        plt.title(f"Robot Trajectory with the Synthesized Controller for Trial {trial_num} from t = 20 to t = 50", font = {'size': 10})
-        plt.savefig(f"trajectory_trial_{trial_num}.pdf")
-        plt.show()
-        print()
+        EC_control.append(success_count_controller / feasible_count_controller)
+        print("EC_control:", success_count_controller / feasible_count_controller)
+        
+        results[i]["obstacle_location_control"] = obstacle_location_control
+        results[i]["sensor_location_control"] = sensor_location_control
+        results[i]["EC_control"] = EC_control
+        results[i]["trajectory_x"] = trajectory_x
+        results[i]["trajectory_y"] = trajectory_y
 
-    # Plot coverages.
-    plt.hist(success_rates_cp, bins=10)
-    plt.title("Coverage for Conformal Prediction")
-    plt.xlabel("Coverage")
-    plt.ylabel("Frequency")
-    plt.savefig("coverage_cp.pdf")
-    plt.show()
+    # print("Saving data.")
+    # for i in range(num_groups):
+    #     with open("results/example_1_num_calib=" + str(groups[i]["num_calib"]) + ".json", "w") as f:
+    #         json.dump(results[i], f)
 
-    print("Success rate of the controller", success_count_controller / num_test_trials)
-    with open("controll_success_rate.json", "w") as outfile:
-        outfile.write(str(success_count_controller / num_test_trials))
+            
 
-    with open("coverage_cp.json", "w") as outfile:
-        json.dump(success_rates_cp, outfile)
+
+def main():
+    # cp()
+    control_cp()
+
+    
 
 if __name__ == "__main__":
     main()
