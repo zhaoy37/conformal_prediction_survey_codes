@@ -19,5 +19,3 @@ region_distance = 0.6
 
 final_region = [5, 5]
 final_distance = 0.2
-
-M = 1000

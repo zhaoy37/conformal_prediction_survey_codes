@@ -78,7 +78,7 @@ def plot_trajectories(results):
         circle = patches.Circle((final_region[i], final_region[i]), final_distance, color='blue', fill=True, alpha=0.3, linewidth=0, label = "final area")
         ax[i_p].add_patch(circle)
 
-        ax[i_p].set_xlim(-0.5, 6)
+        ax[i_p].set_xlim(-0.5, 6) 
         ax[i_p].set_ylim(-0.5, 6)
     plt.legend()
     plt.savefig(f"results/example1_trajectory_trials.pdf")
