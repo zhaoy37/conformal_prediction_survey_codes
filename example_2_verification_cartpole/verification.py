@@ -45,7 +45,8 @@ def main():
                 plt.legend(loc='upper right')
                 plt.xlabel('Nonconformity Scores')
                 plt.ylabel('Frequency')
-                plt.title('Histogram of Nonconformity Scores')
+                plt.title('Histogram of $R^{(i)}$ for one Experiment with K=500')
+                plt.savefig("example_2_histogram_nonconformities.pdf")
                 plt.show()
             c_dict[K].append(c)
             # Compute empirical coverage
@@ -69,6 +70,7 @@ def main():
     plt.xlabel('C')
     plt.ylabel('Frequency')
     plt.title('Histogram of Cs')
+    plt.savefig("example_2_histogram_cs.pdf")
     plt.show()
 
     for K in [100, 300, 500]:
@@ -80,7 +82,8 @@ def main():
     plt.legend(loc='upper right')
     plt.xlabel('$CEC_n$')
     plt.ylabel('Frequency')
-    plt.title('Histogram of Conditional Empirical Coverages')
+    plt.title('Histogram of $CEC_n$')
+    plt.savefig("example_2_histogram_conditional_coverages.pdf")
     plt.show()
 
 
