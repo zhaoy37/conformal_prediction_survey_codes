@@ -45,7 +45,7 @@ def main():
                 plt.legend(loc='upper right')
                 plt.xlabel('Nonconformity Scores')
                 plt.ylabel('Frequency')
-                plt.title('Histogram of $R^{(i)}$ for one Experiment with K=500')
+                #plt.title('Histogram of $R^{(i)}$ for one Experiment with K=500')
                 plt.savefig("example_2_histogram_nonconformities.pdf")
                 plt.show()
             c_dict[K].append(c)
@@ -69,7 +69,7 @@ def main():
     plt.legend(loc='upper right')
     plt.xlabel('C')
     plt.ylabel('Frequency')
-    plt.title('Histogram of Cs')
+    #plt.title('Histogram of Cs')
     plt.savefig("example_2_histogram_cs.pdf")
     plt.show()
 
@@ -82,7 +82,7 @@ def main():
     plt.legend(loc='upper right')
     plt.xlabel('$CEC_n$')
     plt.ylabel('Frequency')
-    plt.title('Histogram of $CEC_n$')
+    #plt.title('Histogram of $CEC_n$')
     plt.savefig("example_2_histogram_conditional_coverages.pdf")
     plt.show()
 
