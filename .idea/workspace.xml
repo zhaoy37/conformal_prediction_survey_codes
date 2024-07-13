@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e46c693a-12d8-4608-a2c2-9079ccc1775b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example_2_verification_cartpole/verification.py" beforeDir="false" afterPath="$PROJECT_DIR$/example_2_verification_cartpole/verification.py" afterDir="false" />
-    </list>
+    <list default="true" id="e46c693a-12d8-4608-a2c2-9079ccc1775b" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -105,7 +102,7 @@
       <workItem from="1720775458551" duration="34000" />
       <workItem from="1720775858688" duration="16000" />
       <workItem from="1720787174706" duration="7336000" />
-      <workItem from="1720849370783" duration="1512000" />
+      <workItem from="1720849370783" duration="1848000" />
     </task>
     <servers />
   </component>
@@ -124,7 +121,7 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/conformal_prediction_survey_codes$verification.coverage" NAME="verification Coverage Results" MODIFIED="1720796392148" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/example_2_verification_cartpole" />
+    <SUITE FILE_PATH="coverage/conformal_prediction_survey_codes$verification.coverage" NAME="verification Coverage Results" MODIFIED="1720851277078" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/example_2_verification_cartpole" />
     <SUITE FILE_PATH="coverage/conformal_prediction_survey_codes$demo_network.coverage" NAME="demo_network Coverage Results" MODIFIED="1720849394543" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/example_2_verification_cartpole" />
   </component>
 </project>
