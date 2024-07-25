@@ -14,9 +14,9 @@ T = 20                 # The time horizon.
 sensor_noise = 0.025   # The noise of the sensor output location in terms of the standard deviation for the normal distribution.
 
 delta = 0.05           # The expected miscoverage rate.
-center_x = 9.5
-center_y = 9.5
-radius = 2.5
+center_x = 13.5
+center_y = 0.5
+radius = 3
 
 # truncated normal distribution
 def truncated_normal(mean=1, std=0.1, lower=0, upper=2, size=2):
