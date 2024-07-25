@@ -34,9 +34,10 @@ def cp():
         print("Executing group:", i)
         print("Evaluating:", groups[i])
         results[i] = dict()
-        EC_cp = []
+        CEC = []
         c = []
         nonconformity_list = []
+        num_success_one_test = 0 # this is for equation (5)
         for _ in range(num_test_trials):
             # Draw calibration data
             region_locations = [generate_region_location() for _ in range(groups[i]["num_calib"])]
@@ -51,6 +52,7 @@ def cp():
             p = int(np.ceil((groups[i]["num_calib"] + 1) * (1 - delta)))
             c.append(nonconformity[p - 1])
             nonconformity_list.append(nonconformity)
+            
             # test results
             test_locations = [generate_region_location() for _ in range(num_test_samples)]
             test_sensor_locations = [[generate_sensor_ouput(test_locations[n_t][n_o], sensor_noise) for n_o in range(num_region)] for n_t in range(num_test_samples)]
@@ -58,15 +60,19 @@ def cp():
             for n_c in range(num_test_samples):
                 if max(math.sqrt((test_locations[n_c][n_o][0] - test_sensor_locations[n_c][n_o][0])**2 + (test_locations[n_c][n_o][1] - test_sensor_locations[n_c][n_o][1])**2) for n_o in range(num_region)) <= c[-1]:
                     num_success += 1
-            EC_cp.append(num_success / num_test_samples)
-
-        results[i]["EC_cp"] = EC_cp
+                    if n_c == 0:
+                        num_success_one_test += 1
+            EC = num_success_one_test / num_test_trials
+            CEC.append(num_success / num_test_samples)
+        
+        results[i]["EC"] = EC
+        results[i]["CEC"] = CEC
         results[i]["c"] = c
         results[i]["nonconformity_list"] = nonconformity_list
 
     print("Saving data.")
     for i in range(num_groups):
-        with open("results/example_1_num_calib=" + str(groups[i]["num_calib"]) + ".json", "w") as f:
+        with open("example0_robot navigation/results/example_0_num_calib=" + str(groups[i]["num_calib"]) + ".json", "w") as f:
             json.dump(results[i], f)
 
 
@@ -78,13 +84,13 @@ def control_cp():
     results = dict()
     for i in range(num_groups):
         results[i] = dict()
-        with open("results/example_1_num_calib=" + str(groups[i]["num_calib"]) + ".json", "r") as file:
+        with open("example0_robot navigation/results/example_0_num_calib=" + str(groups[i]["num_calib"]) + ".json", "r") as file:
             results[i] = json.load(file)
 
     for i in range(num_groups):
         print("Executing group:", i)
         print("Evaluating:", groups[i])
-        EC_control = []
+        CEC_control = []
         alldata_trajectory_x = []
         alldata_trajectory_y = []
         alldata_region_location_control = []
@@ -98,8 +104,8 @@ def control_cp():
             success_count_controller = 0
             feasible_count_controller = 0
             for _ in range(num_test_samples):
-                obstacle_location = generate_region_location() 
-                sensor_location = [generate_sensor_ouput(obstacle_location[n_o], sensor_noise) for n_o in range(num_region)] 
+                reaching_location = generate_region_location() 
+                sensor_location = [generate_sensor_ouput(reaching_location[n_o], sensor_noise) for n_o in range(num_region)] 
                 model = Model("model")
                 model.setRealParam("limits/time", 100)
                 # Initialize the variables and encode the system model.
@@ -145,31 +151,31 @@ def control_cp():
                         x_opt1.append(sol[x[t, 0]])
                         x_opt2.append(sol[x[t, 2]])
                         
-                    success_count_controller += is_successful_trajectory(x_opt1, x_opt2, obstacle_location, num_region, region_distance)
+                    success_count_controller += is_successful_trajectory(x_opt1, x_opt2, reaching_location, num_region, region_distance)
                     feasible_count_controller += 1
                     trajectory_x.append(x_opt1)
                     trajectory_y.append(x_opt2)
-                    region_location_control.append(obstacle_location)
+                    region_location_control.append(reaching_location)
                     sensor_location_control.append(sensor_location)
                 else:
                     print("infeasible")
 
-            EC_control.append(success_count_controller / feasible_count_controller)
-            print("EC_control:", success_count_controller / feasible_count_controller)
+            CEC_control.append(success_count_controller / feasible_count_controller)
+            print("CEC_control:", success_count_controller / feasible_count_controller)
             alldata_trajectory_x.append(trajectory_x)
             alldata_trajectory_y.append(trajectory_y)
             alldata_region_location_control.append(region_location_control)
             alldata_sensor_location_control.append(sensor_location_control)
         
-        results[i]["obstacle_location_control"] = alldata_region_location_control
+        results[i]["reaching_location_control"] = alldata_region_location_control
         results[i]["sensor_location_control"] = alldata_sensor_location_control
-        results[i]["EC_control"] = EC_control
+        results[i]["CEC_control"] = CEC_control
         results[i]["trajectory_x"] = alldata_trajectory_x
         results[i]["trajectory_y"] = alldata_trajectory_y
 
     print("Saving data.")
     for i in range(num_groups):
-        with open("results/example_1_num_calib=" + str(groups[i]["num_calib"]) + ".json", "w") as f:
+        with open("example0_robot navigation/results/example_0_num_calib=" + str(groups[i]["num_calib"]) + ".json", "w") as f:
             json.dump(results[i], f)
 
 
