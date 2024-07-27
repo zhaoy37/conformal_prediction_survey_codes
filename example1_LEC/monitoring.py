@@ -48,6 +48,9 @@ def cp():
         results[i]["CEC"] = CEC
         results[i]["c"] = c
         results[i]["nonconformity_list"] = nonconformity_list
+        c_average = sum(results[i]["c"]) / len(results[i]["c"])
+        results[i]["c_average"] = c_average
+
 
     print("Saving data.")
     for i in range(num_groups):
