@@ -6,6 +6,7 @@ delta_theta = 0.2
 delta_p = 4.5
 delta = 0.05
 J = 200
+N_param = 500
 
 
 def compute_robustness(trajectory):
@@ -22,9 +23,12 @@ def main():
     coverage_dict = dict()
     conditional_coverage_dict = dict()
     for K in [100, 300, 500]:
+        print("Working on K :=", K)
         correct_coverage = 0
         conditional_coverage_dict[K] = []
-        for N in range(300):
+        for N in range(N_param):
+            if N % 100 == 0:
+                print("Working on index", N)
             # Sample K + 1 trajectories.
             np.random.shuffle(trajectories)
             # Use the first K as the calibration set.
@@ -40,13 +44,11 @@ def main():
             nonconformity_scores.append(float("inf"))
             c = nonconformity_scores[p - 1]
             if N == 0 and K == 500:
-                plt.hist(nonconformity_scores[:-1], bins=20, alpha=0.5, label='Nonconformity Scores')
-                plt.axvline(c, label = 'C', color = 'r')
-                plt.legend(loc='upper right')
-                plt.xlabel('Nonconformity Scores')
-                plt.ylabel('Frequency')
-                plt.savefig("example_2_histogram_nonconformities.pdf")
-                plt.show()
+                # Save the nonconformity scores.
+                with open("results/example_nonconformity_scores.json", "w") as f:
+                    json.dump(nonconformity_scores[:-1], f)
+                with open("results/example_c.json", "w") as f:
+                    json.dump(c, f)
             c_dict[K].append(c)
             # Compute empirical coverage
             test_nonconformity = (0 - compute_robustness(test_trajectory))
@@ -59,29 +61,19 @@ def main():
                 if test_nonconformity <= c:
                     correct_cond_coverage += 1
             conditional_coverage_dict[K].append(correct_cond_coverage / J)
-        coverage_dict[K] = correct_coverage / 300
+        coverage_dict[K] = correct_coverage / N_param
 
-    # Plot the histogram of Cs.
-    plt.hist(c_dict[100], bins=20, alpha=0.5, label='K=100')
-    plt.hist(c_dict[300], bins=20, alpha=0.5, label='K=300')
-    plt.hist(c_dict[500], bins=20, alpha=0.5, label='K=500')
-    plt.legend(loc='upper right')
-    plt.xlabel('C')
-    plt.ylabel('Frequency')
-    plt.savefig("example_2_histogram_cs.pdf")
-    plt.show()
+    # Save c_dict.
+    with open("results/c_dict.json", "w") as f:
+        json.dump(c_dict, f)
 
-    for K in [100, 300, 500]:
-        print(f"Empirical coverage for K = {K} is:", coverage_dict[K])
+    # Save coverage_dict.
+    with open("results/coverage_dict.json", "w") as f:
+        json.dump(coverage_dict, f)
 
-    # Plot the conditional coverages.
-    for K in [100, 300, 500]:
-        plt.hist(conditional_coverage_dict[K], bins=20, alpha=0.5, label=f'K={K}')
-    plt.legend(loc='upper right')
-    plt.xlabel('$CEC_n$')
-    plt.ylabel('Frequency')
-    plt.savefig("example_2_histogram_conditional_coverages.pdf")
-    plt.show()
+    # Save the conditional_coverage_dict.
+    with open("results/conditional_coverage_dict.json", "w") as f:
+        json.dump(conditional_coverage_dict, f)
 
 
 if __name__ == "__main__":
