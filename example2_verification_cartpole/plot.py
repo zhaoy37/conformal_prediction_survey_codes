@@ -14,6 +14,7 @@ def main():
         nonconformity_scores = json.load(f)
     with open("results/example_c.json", "r") as f:
         c = json.load(f)
+    plt.figure(figsize=(8.7, 7.6))
     plt.hist(nonconformity_scores[:-1], bins=20, label='Nonconformity Scores')
     plt.axvline(c, label='C', color='r')
     plt.legend(loc='upper right')
