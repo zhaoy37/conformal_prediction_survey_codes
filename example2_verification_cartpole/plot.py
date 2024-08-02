@@ -17,7 +17,7 @@ def main():
     plt.figure(figsize=(8.7, 7.6))
     plt.hist(nonconformity_scores[:-1], bins=20, label='Nonconformity Scores')
     plt.axvline(c, label='C', color='r')
-    plt.legend(loc='upper right')
+    plt.legend(fontsize=legend_size)
     plt.tick_params("x", labelsize=label_size)
     plt.tick_params("y", labelsize=label_size)
     plt.xlabel('Nonconformity Scores', fontsize = font_size)
