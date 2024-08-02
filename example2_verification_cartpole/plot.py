@@ -42,7 +42,7 @@ def main():
     plt.tick_params("x", labelsize=label_size)
     plt.tick_params("y", labelsize=label_size)
     plt.ylabel("Frequency", fontsize=font_size)
-    plt.xlabel('C', fontsize=font_size)
+    plt.xlabel('$C_n$', fontsize=font_size)
     plt.tight_layout()
     plt.savefig("example_2_histogram_cs.pdf")
 
