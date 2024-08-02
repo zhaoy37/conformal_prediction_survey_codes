@@ -18,8 +18,10 @@ def main():
     plt.hist(nonconformity_scores[:-1], bins=20, label='Nonconformity Scores')
     plt.axvline(c, label='C', color='r')
     plt.legend(loc='upper right')
-    plt.xlabel('Nonconformity Scores')
-    plt.ylabel('Frequency')
+    plt.tick_params("x", labelsize=label_size)
+    plt.tick_params("y", labelsize=label_size)
+    plt.xlabel('Nonconformity Scores', fontsize = font_size)
+    plt.ylabel('Frequency', fontsize = font_size)
     plt.tight_layout()
     plt.savefig("example_2_histogram_nonconformities.pdf")
 
