@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 delta_theta = 0.2
 delta_p = 4.5
 delta = 0.05
-J = 500
+J = 400
 N_param = 500
 
 
@@ -37,6 +37,8 @@ def main():
             test_trajectory = trajectories[K]
             # Use the K + 2 to K + J + 2 as the cond test set.
             cond_test_trajectories = trajectories[K + 1:K + J + 1]
+            if K + J + 1 > len(trajectories):
+                raise ValueError("Not enough trajectories.")
             # Compute the nonconformity score.
             nonconformity_scores = [(0 - compute_robustness(trajectory)) for trajectory in trajectories_calibration]
             p = int(np.ceil((1 - delta) * (K + 1)))
