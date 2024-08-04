@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 delta_theta = 0.2
 delta_p = 4.5
 delta = 0.05
-J = 200
+J = 500
 N_param = 500
 
 
