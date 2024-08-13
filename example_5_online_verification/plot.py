@@ -24,7 +24,7 @@ def main():
         colors = ["r", "g", "b"]
         time_stamps = [i for i in range(len(altitudes[0]))]
         pred_time_stamps = [i for i in range(current_time + 1, len(altitudes[0]))]
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8.7, 7.6))
 
         for i in range(len(altitudes)):
             ax1.plot(time_stamps, altitudes[i], color=colors[i])
@@ -49,6 +49,7 @@ def main():
         direct_nonconformity_scores = json.load(f)
     with open("results/c_direct.json", "r") as f:
         c_direct = json.load(f)
+    plt.figure(figsize=(8.7, 7.6))
     plt.hist(direct_nonconformity_scores[:-1], bins=20)
     plt.xlabel("Nonconformity Score")
     plt.ylabel("Frequency")
@@ -67,6 +68,7 @@ def main():
     sorted_direct_test_robustnesses, sorted_direct_test_lowerbound_robustnesses = zip(
         *sorted(zip(direct_test_robustnesses, direct_test_lowerbound_robustnesses)))
     dot_sizes = [5 for j in range(test_size)]
+    plt.figure(figsize=(8.7, 7.6))
     plt.scatter([j for j in range(test_size)], sorted_direct_test_robustnesses, s=dot_sizes, color="r",
                 label="$\\rho^\phi(X, \\tau_0)$")
     plt.scatter([j for j in range(test_size)], sorted_direct_test_lowerbound_robustnesses, s=dot_sizes, color="g",
@@ -81,6 +83,7 @@ def main():
     # Plot the coverages of the direct method.
     with open("results/direct_coverages.json", "r") as f:
             direct_coverages = json.load(f)
+    plt.figure(figsize=(8.7, 7.6))
     plt.hist(direct_coverages, bins=50)
     plt.xlabel("Coverage")
     plt.ylabel("Frequency")
@@ -93,6 +96,7 @@ def main():
         indirect_nonconformity_scores = json.load(f)
     with open("results/c_indirect.json", "r") as f:
         c_indirect = json.load(f)
+    plt.figure(figsize=(8.7, 7.6))
     plt.hist(indirect_nonconformity_scores[:-1], bins=20)
     plt.xlabel("Nonconformity Score")
     plt.ylabel("Frequency")
@@ -110,6 +114,7 @@ def main():
     sorted_indirect_test_robustnesses, sorted_indirect_test_lowerbound_robustnesses = zip(
         *sorted(zip(indirect_test_robustnesses, indirect_test_lowerbound_robustnesses)))
     dot_sizes = [5 for j in range(test_size)]
+    plt.figure(figsize=(8.7, 7.6))
     plt.scatter([j for j in range(test_size)], sorted_indirect_test_robustnesses, s=dot_sizes, color="r",
                 label="$\\rho^\phi(X, \\tau_0)$")
     plt.scatter([j for j in range(test_size)], sorted_indirect_test_lowerbound_robustnesses, s=dot_sizes, color="g",
@@ -124,6 +129,7 @@ def main():
     # Plot the coverages of the indirect method.
     with open("results/indirect_coverages.json", "r") as f:
         indirect_coverages = json.load(f)
+    plt.figure(figsize=(8.7, 7.6))
     plt.hist(indirect_coverages, bins=20)
     plt.xlabel("Coverage")
     plt.ylabel("Frequency")
