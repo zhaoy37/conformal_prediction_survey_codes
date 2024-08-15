@@ -94,17 +94,17 @@ def main():
     # Plot the coverages of the direct method.
     with open("results/direct_coverages.json", "r") as f:
             direct_coverages = json.load(f)
-    plt.figure(figsize=(8.7, 7.6))
+    plt.figure(figsize=(8.7, 7.6 * 1.03))
     min_value = min(direct_coverages)
     max_value = max(direct_coverages)
     y, x = np.histogram(direct_coverages, bins=np.arange(min_value, max_value + (max_value - min_value) / num_bins, (max_value - min_value) / num_bins))
     sns.lineplot(x=x[:-1], y=y)
     plt.fill_between(x=x[:-1], y1=y, y2=0, alpha=0.3)
-    plt.xlabel("Coverage", fontsize = font_size - 7)
-    plt.ylabel("Frequency", fontsize = font_size - 7)
+    plt.xlabel("Coverage", fontsize = font_size)
+    plt.ylabel("Frequency", fontsize = font_size)
+    plt.tick_params("x", labelsize=label_size)
+    plt.tick_params("y", labelsize=label_size)
     plt.tight_layout()
-    plt.tick_params("x", labelsize=label_size - 7)
-    plt.tick_params("y", labelsize=label_size - 7)
     plt.savefig("plots_survey_paper/direct_coverages.pdf")
     plt.show()
 
