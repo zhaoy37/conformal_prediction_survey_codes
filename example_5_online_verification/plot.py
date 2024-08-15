@@ -27,7 +27,7 @@ def main():
         colors = ["r", "g", "b"]
         time_stamps = [i for i in range(len(altitudes[0]))]
         pred_time_stamps = [i for i in range(current_time + 1, len(altitudes[0]))]
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8.7, 7.6))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8.7 * 2, 7.6))
 
         for i in range(len(altitudes)):
             ax1.plot(time_stamps, altitudes[i], color=colors[i])
@@ -56,7 +56,7 @@ def main():
         direct_nonconformity_scores = json.load(f)
     with open("results/c_direct.json", "r") as f:
         c_direct = json.load(f)
-    plt.figure(figsize=(8.7 * 2, 7.6))
+    plt.figure(figsize=(8.7, 7.6))
     plt.hist(direct_nonconformity_scores[:-1], bins=20)
     plt.xlabel("Nonconformity Score", fontsize = font_size)
     plt.ylabel("Frequency", fontsize = font_size)
