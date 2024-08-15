@@ -1,11 +1,14 @@
 import json
 import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 
 
 font_size = 28
 label_size = 24
 legend_size = 24
 fig_size = (8.7, 7.6)
+num_bins = 15
 
 
 def main():
@@ -92,12 +95,16 @@ def main():
     with open("results/direct_coverages.json", "r") as f:
             direct_coverages = json.load(f)
     plt.figure(figsize=(8.7, 7.6))
-    plt.hist(direct_coverages, bins=50)
-    plt.xlabel("Coverage", fontsize = font_size)
-    plt.ylabel("Frequency", fontsize = font_size)
+    min_value = min(direct_coverages)
+    max_value = max(direct_coverages)
+    y, x = np.histogram(direct_coverages, bins=np.arange(min_value, max_value + (max_value - min_value) / num_bins, (max_value - min_value) / num_bins))
+    sns.lineplot(x=x[:-1], y=y)
+    plt.fill_between(x=x[:-1], y1=y, y2=0, alpha=0.3)
+    plt.xlabel("Coverage", fontsize = font_size - 7)
+    plt.ylabel("Frequency", fontsize = font_size - 7)
     plt.tight_layout()
-    plt.tick_params("x", labelsize=label_size)
-    plt.tick_params("y", labelsize=label_size)
+    plt.tick_params("x", labelsize=label_size - 7)
+    plt.tick_params("y", labelsize=label_size - 7)
     plt.savefig("plots_survey_paper/direct_coverages.pdf")
     plt.show()
 
@@ -144,7 +151,12 @@ def main():
     with open("results/indirect_coverages.json", "r") as f:
         indirect_coverages = json.load(f)
     plt.figure(figsize=(8.7, 7.6))
-    plt.hist(indirect_coverages, bins=20)
+    min_value = min(indirect_coverages) - 0.05
+    max_value = max(indirect_coverages) + 0.1
+    y, x = np.histogram(indirect_coverages, bins=np.arange(min_value, max_value + (max_value - min_value) / num_bins,
+                                                         (max_value - min_value) / num_bins))
+    sns.lineplot(x=x[:-1], y=y)
+    plt.fill_between(x=x[:-1], y1=y, y2=0, alpha=0.3)
     plt.xlabel("Coverage", fontsize = font_size)
     plt.ylabel("Frequency", fontsize = font_size)
     plt.tick_params("x", labelsize=label_size)
