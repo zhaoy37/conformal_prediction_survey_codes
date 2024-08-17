@@ -1,11 +1,14 @@
 import json
 import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 
 
 font_size = 28
 label_size = 24
 legend_size = 24
 fig_size = (8.7, 7.6)
+num_bins = 20
 
 
 def main():
@@ -16,7 +19,11 @@ def main():
     with open("results/c_tilde_direct.json", "r") as f:
         c_tilde_direct = json.load(f)
     plt.figure(figsize=(8.7, 7.6))
-    plt.hist(direct_nonconformity_scores[:-1], bins=20)
+    min_value = min(direct_nonconformity_scores[:-1])
+    max_value = max(direct_nonconformity_scores[:-1])
+    y, x = np.histogram(direct_nonconformity_scores[:-1], bins=np.arange(min_value, max_value + (max_value - min_value) / num_bins, (max_value - min_value) / num_bins))
+    sns.lineplot(x=x[:-1], y=y)
+    plt.fill_between(x=x[:-1], y1=y, y2=0, alpha=0.3)
     plt.xlabel("Nonconformity Score", fontsize = font_size)
     plt.ylabel("Frequency", fontsize = font_size)
     plt.axvline(c_direct, label="$c$", color = "r")
@@ -105,8 +112,17 @@ def main():
     with open("results/robust_direct_coverages.json") as f:
         robust_direct_coverages = json.load(f)
     plt.figure(figsize=(8.7, 7.6))
-    plt.hist(direct_coverages, bins=20, label="non-robust direct method")
-    plt.hist(robust_direct_coverages, bins=20, label="robust direct method")
+    min_value_direct = min(np.concatenate((direct_coverages, robust_direct_coverages)))
+    max_value_direct = max(np.concatenate((direct_coverages, robust_direct_coverages)))
+    y_direct, x_direct = np.histogram(direct_coverages, bins=np.arange(min_value_direct, max_value_direct + (max_value_direct - min_value_direct) / num_bins,
+                                                 (max_value_direct - min_value_direct) / num_bins))
+    sns.lineplot(x=x_direct[:-1], y=y_direct)
+    plt.fill_between(x=x_direct[:-1], y1=y_direct, y2=0, alpha=0.3, label="Vanilla Direct Method")
+    y_robust_direct, x_robust_direct = np.histogram(robust_direct_coverages, bins=np.arange(min_value_direct, max_value_direct + (max_value_direct - min_value_direct) / num_bins, (
+                                                                                   max_value_direct - min_value_direct) / num_bins))
+    sns.lineplot(x=x_robust_direct[:-1], y=y_robust_direct)
+    plt.fill_between(x=x_robust_direct[:-1], y1=y_robust_direct, y2=0, alpha=0.3, label="Robust Direct Method")
+
     plt.xlabel("Coverage", fontsize = font_size)
     plt.ylabel("Frequency", fontsize = font_size)
     plt.legend(fontsize=legend_size)
@@ -121,8 +137,23 @@ def main():
     with open("results/robust_indirect_coverages.json") as f:
         robust_indirect_coverages = json.load(f)
     plt.figure(figsize=(8.7, 7.6))
-    plt.hist(indirect_coverages, bins=20, label="non-robust indirect method")
-    plt.hist(robust_indirect_coverages, bins=20, label="robust indirect method")
+
+    min_value_indirect = min(np.concatenate((indirect_coverages, robust_indirect_coverages))) - 0.1
+    max_value_indirect = max(np.concatenate((indirect_coverages, robust_indirect_coverages))) + 0.1
+    y_indirect, x_indirect = np.histogram(indirect_coverages, bins=np.arange(min_value_indirect, max_value_indirect + (
+                max_value_indirect - min_value_indirect) / num_bins,
+                                                                       (
+                                                                                   max_value_indirect - min_value_indirect) / num_bins))
+    sns.lineplot(x=x_indirect[:-1], y=y_indirect)
+    plt.fill_between(x=x_indirect[:-1], y1=y_indirect, y2=0, alpha=0.3, label="Vanilla Indirect Method")
+    y_robust_indirect, x_robust_indirect = np.histogram(robust_indirect_coverages, bins=np.arange(min_value_indirect,
+                                                                                            max_value_indirect + (
+                                                                                                        max_value_indirect - min_value_indirect) / num_bins,
+                                                                                            (
+                                                                                                    max_value_indirect - min_value_indirect) / num_bins))
+    sns.lineplot(x=x_robust_indirect[:-1], y=y_robust_indirect)
+    plt.fill_between(x=x_robust_indirect[:-1], y1=y_robust_indirect, y2=0, alpha=0.3, label="Robust Indirect Method")
+
     plt.xlabel("Coverage", fontsize = font_size)
     plt.ylabel("Frequency", fontsize = font_size)
     plt.legend(fontsize=legend_size)
