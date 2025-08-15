@@ -10,7 +10,7 @@ font_size = 28
 label_size = 24
 legend_size = 24
 
-model = tf.keras.models.load_model("example1_LEC/data and figure/trained_model.h5")
+model = tf.keras.models.load_model("data and figure/trained_model.h5")
 
 
 def plot_CEC(results, num_bins):
@@ -32,7 +32,7 @@ def plot_CEC(results, num_bins):
     plt.ylabel("Frequency", fontsize = font_size)
     plt.xlabel(f"$CEC_n$", fontsize = font_size)
     plt.tight_layout()
-    plt.savefig("example1_LEC/data and figure/example1_CEC.pdf")
+    plt.savefig("data and figure/example1_CEC.pdf")
 
 def plot_C(results, num_bins):
     catagory = "c"
@@ -53,7 +53,7 @@ def plot_C(results, num_bins):
     plt.ylabel("Frequency", fontsize = font_size)
     plt.xlabel(f"$C_n$", fontsize = font_size)
     plt.tight_layout()
-    plt.savefig("example1_LEC/data and figure/example1_C.pdf")
+    plt.savefig("data and figure/example1_C.pdf")
 
 def illustration():
     inputs = np.array([generate_input() for _ in range(1000)])
@@ -67,22 +67,22 @@ def illustration():
 
     plt.tick_params("x", labelsize=label_size)
     plt.tick_params("y", labelsize=label_size)
-    plt.ylabel("$y_2$", fontsize = font_size)
-    plt.xlabel(f"$y_1$", fontsize = font_size)
+    plt.ylabel("$p^x_10$", fontsize = font_size)
+    plt.xlabel(f"$p^y_10$", fontsize = font_size)
     
     plt.legend(fontsize = 20)
     plt.axis('equal')
     # plt.xlim([6.2, 13.5])
     # plt.ylim([5, 15])
     plt.tight_layout()
-    plt.savefig("example1_LEC/data and figure/example1_illstration.pdf")
+    plt.savefig("data and figure/example1_illstration.pdf")
 
 
 def main():
     results = dict()
     for i in range(num_groups):
         results[i] = dict()
-        with open("example1_LEC/data and figure/example_1_num_calib=" + str(groups[i]["num_calib"]) + ".json", "r") as file:
+        with open("data and figure/example_1_num_calib=" + str(groups[i]["num_calib"]) + ".json", "r") as file:
             results[i] = json.load(file)
     
             
