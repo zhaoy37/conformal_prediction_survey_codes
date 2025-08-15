@@ -46,9 +46,9 @@ def generate_trajectory(num_samples):
 num_samples = 10000
 input, output, trajectories = generate_trajectory(num_samples)
 
-with open("example1_LEC/data and figure/data_train_input.json", "w") as f:
+with open("data and figure/data_train_input.json", "w") as f:
     json.dump(input, f)
-with open("example1_LEC/data and figure/data_train_output.json", "w") as f:
+with open("data and figure/data_train_output.json", "w") as f:
     json.dump(output, f)
 
 # plot figure to see the trajectories

@@ -5,9 +5,9 @@ from tensorflow.keras.layers import Dense
 from sklearn.model_selection import train_test_split
 
 # loda data
-with open("example1_LEC/data and figure/data_train_input.json", "r") as f:
+with open("data and figure/data_train_input.json", "r") as f:
     x = np.array(json.load(f))
-with open("example1_LEC/data and figure/data_train_output.json", "r") as f:
+with open("data and figure/data_train_output.json", "r") as f:
     y = np.array(json.load(f))
 
 # split into 
@@ -27,7 +27,7 @@ model.summary()
 history = model.fit(x_train, y_train, epochs=50, batch_size=32, validation_split=0.2, verbose=0)
 
 # save the model
-model.save("example1_LEC/data and figure/trained_model.h5")
+model.save("data and figure/trained_model.h5")
 
 # test the model
 loss = model.evaluate(x_test, y_test)

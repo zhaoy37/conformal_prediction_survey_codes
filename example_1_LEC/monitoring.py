@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 from parameters import *
 
 
-
-model = tf.keras.models.load_model("example1_LEC/data and figure/trained_model.h5")
+import os
+model = tf.keras.models.load_model("data and figure/trained_model.h5")
 
 
 def cp():
@@ -49,12 +49,13 @@ def cp():
         results[i]["c"] = c
         results[i]["nonconformity_list"] = nonconformity_list
         c_average = sum(results[i]["c"]) / len(results[i]["c"])
+        print("Average c:", c_average)
         results[i]["c_average"] = c_average
 
 
     print("Saving data.")
     for i in range(num_groups):
-        with open("example1_LEC/data and figure/example_1_num_calib=" + str(groups[i]["num_calib"]) + ".json", "w") as f:
+        with open("data and figure/example_1_num_calib=" + str(groups[i]["num_calib"]) + ".json", "w") as f:
             json.dump(results[i], f)
 
 if __name__ == "__main__":
