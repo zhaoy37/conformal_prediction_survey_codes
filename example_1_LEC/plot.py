@@ -67,8 +67,8 @@ def illustration():
 
     plt.tick_params("x", labelsize=label_size)
     plt.tick_params("y", labelsize=label_size)
-    plt.ylabel("$p^x_10$", fontsize = font_size)
-    plt.xlabel(f"$p^y_10$", fontsize = font_size)
+    plt.ylabel("$p^x_{10}$", fontsize = font_size)
+    plt.xlabel(f"$p^y_{10}$", fontsize = font_size)
     
     plt.legend(fontsize = 20)
     plt.axis('equal')
