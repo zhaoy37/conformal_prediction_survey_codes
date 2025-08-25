@@ -2,6 +2,8 @@ import json
 from parameters import *
 import numpy as np
 import matplotlib.pyplot as plt
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
 import seaborn as sns
 import matplotlib.patches as patches
 import tensorflow as tf
