@@ -7,7 +7,7 @@ from pyscipopt import Model
 import json
 from parameters import *
 
-np.random.seed(12)
+np.random.seed(1)
 
 def generate_region_location():
     region_1 = [round(np.random.uniform(1.5, 2.5), 2), round(np.random.uniform(0.5, 1), 2)]
@@ -72,7 +72,7 @@ def cp():
 
     print("Saving data.")
     for i in range(num_groups):
-        with open("example0_robot navigation/results/example_0_num_calib=" + str(groups[i]["num_calib"]) + ".json", "w") as f:
+        with open("results/example_0_num_calib=" + str(groups[i]["num_calib"]) + ".json", "w") as f:
             json.dump(results[i], f)
 
 
@@ -84,7 +84,7 @@ def control_cp():
     results = dict()
     for i in range(num_groups):
         results[i] = dict()
-        with open("example0_robot navigation/results/example_0_num_calib=" + str(groups[i]["num_calib"]) + ".json", "r") as file:
+        with open("results/example_0_num_calib=" + str(groups[i]["num_calib"]) + ".json", "r") as file:
             results[i] = json.load(file)
 
     for i in range(num_groups):
@@ -175,7 +175,7 @@ def control_cp():
 
     print("Saving data.")
     for i in range(num_groups):
-        with open("example0_robot navigation/results/example_0_num_calib=" + str(groups[i]["num_calib"]) + ".json", "w") as f:
+        with open("results/example_0_num_calib=" + str(groups[i]["num_calib"]) + ".json", "w") as f:
             json.dump(results[i], f)
 
 

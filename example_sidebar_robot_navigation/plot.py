@@ -6,6 +6,8 @@ import json
 from parameters import *
 import numpy as np
 import matplotlib.pyplot as plt
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
 import seaborn as sns
 import matplotlib.patches as patches
 
@@ -34,7 +36,7 @@ def plot_ec(results, name, num_bins):
     if name == "CEC_control":
         plt.xlabel(f"$CEC_n$ for control", fontsize = font_size)
     plt.tight_layout()
-    plt.savefig("example0_robot navigation/results/example0_" + name + ".pdf")
+    plt.savefig("results/example0_" + name + ".pdf")
 
 
 def plot_nonconformity(results, bin_width):
@@ -51,7 +53,7 @@ def plot_nonconformity(results, bin_width):
     plt.tick_params(axis='y', labelsize = label_size)
     plt.legend(fontsize=legend_size)
     plt.tight_layout()
-    plt.savefig("example0_robot navigation/results/example0_nonconformity_score.pdf")
+    plt.savefig("results/example0_nonconformity_score.pdf")
 
 def plot_trajectories(results):
     group_list = [0, 1, 2]
@@ -88,7 +90,7 @@ def plot_trajectories(results):
         ax[i_p].tick_params("y", labelsize=18)
     plt.legend(fontsize = 16)
     plt.tight_layout()
-    plt.savefig(f"example0_robot navigation/results/example0_trajectory_trials.pdf")
+    plt.savefig(f"results/example0_trajectory_trials.pdf")
 
 
 
@@ -97,7 +99,7 @@ def main():
     results = dict()
     for i in range(num_groups):
         results[i] = dict()
-        with open("example0_robot navigation/results/example_0_num_calib=" + str(groups[i]["num_calib"]) + ".json", "r") as file:
+        with open("results/example_0_num_calib=" + str(groups[i]["num_calib"]) + ".json", "r") as file:
             results[i] = json.load(file)
             
     plot_ec(results, "CEC", 18)
